@@ -42,6 +42,9 @@ dependencies {
     //Jetbrains
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$dependency.jetbrains_kotlin"
 
+    //Virtualsoft
+    implementation "org.bitbucket.virtualsoft-libs:core-android-lib:$dependency.virtualsoft_core"
+
     //Test
     testImplementation "junit:junit:$dependency.tests_junit"
     androidTestImplementation "androidx.test.ext:junit:$dependency.tests_androidx_junit"
