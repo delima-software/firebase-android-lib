@@ -1,0 +1,45 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        applicationId "com.virtualsoft.firebase.app"
+
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+
+        versionCode rootProject.ext.versionCode
+        versionName rootProject.ext.versionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+
+    //Jetbrains
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$dependency.jetbrains_kotlin"
+
+    //Androidx
+    implementation "androidx.core:core-ktx:$dependency.androidx_core"
+    implementation "androidx.appcompat:appcompat:$dependency.androidx_appcompat"
+    implementation "androidx.constraintlayout:constraintlayout:$dependency.androidx_constraintlayout"
+
+    //Test
+    testImplementation "junit:junit:$dependency.tests_junit"
+    androidTestImplementation "androidx.test.ext:junit:$dependency.tests_androidx_junit"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$dependency.tests_androidx_espresso"
+
+}
