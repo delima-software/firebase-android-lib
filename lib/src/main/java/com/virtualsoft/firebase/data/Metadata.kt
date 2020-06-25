@@ -25,7 +25,7 @@ class Metadata(override var id: String? = null,
             type = Metadata::class.java.simpleName,
             creationDate = currentDate(),
             lastUpdate = currentDate(),
-            path = IFirestore.metadataCollection(context),
+            path = IFirestore.metadataCollection(),
             updateMap = hashMapOf()
         )
 

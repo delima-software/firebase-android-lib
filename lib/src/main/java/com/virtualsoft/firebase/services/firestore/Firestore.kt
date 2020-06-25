@@ -5,9 +5,6 @@ import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.toObject
 import com.virtualsoft.core.service.database.data.ITreeData
 import com.virtualsoft.core.designpatterns.builder.IBuilder
-import com.virtualsoft.core.utils.AppUtils.DEVELOPMENT
-import com.virtualsoft.core.utils.AppUtils.PRODUCTION
-import com.virtualsoft.core.utils.AppUtils.isDebugging
 import com.virtualsoft.core.utils.DateUtils.currentDate
 import com.virtualsoft.core.utils.DateUtils.isBeforeDateTime
 import com.virtualsoft.core.utils.TextUtils.nextAlphabeticString
@@ -169,7 +166,7 @@ class Firestore(override var context: Context? = null) :
     override fun readTreeDataChilds(path: String, callback: (List<ITreeData>) -> Unit) {
         val metadataId = path.split("/")[1]
         readMetadata(metadataId) { metadata ->
-            val childsPath = IFirestore.getChildsPath(context, path)
+            val childsPath = IFirestore.getChildsPath(path)
             var source = Source.DEFAULT
             val lastRead = FirestorePreferences.getLastRead(childsPath, context)
             val lastUpdate = metadata?.updateMap?.get(childsPath)
@@ -221,7 +218,7 @@ class Firestore(override var context: Context? = null) :
     override fun writeTreeDataChilds(path: String, childs: List<ITreeData>, callback: ((Boolean) -> Unit)?) {
         var completed = 0
         for (child in childs) {
-            child.path = IFirestore.getChildsPath(context, path)
+            child.path = IFirestore.getChildsPath(path)
             writeTreeData(child.completePath(), child) { wrote ->
                 if (wrote)
                     completed++
@@ -341,12 +338,9 @@ class Firestore(override var context: Context? = null) :
             val lastUpdate = metadata?.updateMap?.get(allType)
             if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true)
                 source = Source.CACHE
-            val rootDocumentPath = "${IFirestore.treedataCollection(context)}/$rootId"
-            firestore.collectionGroup(
-                IFirestore.treedataCollection(
-                    context
-                )
-            ).whereGreaterThanOrEqualTo(ITreeData::path.name, rootDocumentPath)
+            val rootDocumentPath = "${IFirestore.treedataCollection()}/$rootId"
+            firestore.collectionGroup(IFirestore.treedataCollection())
+                .whereGreaterThanOrEqualTo(ITreeData::path.name, rootDocumentPath)
                 .whereLessThan(ITreeData::path.name, rootDocumentPath.nextAlphabeticString())
                 .whereEqualTo(ITreeData::type.name, value).get(source)
                 .addOnSuccessListener { documents ->
@@ -367,32 +361,17 @@ class Firestore(override var context: Context? = null) :
         }
     }
 
-    private fun getEnvironmentReference(): DocumentReference? {
-        var environment = firestore.collection(IFirestore.environmentsCollection()).document(PRODUCTION) //RELEASE
-        if (context?.isDebugging() == true)
-            environment = firestore.collection(IFirestore.environmentsCollection()).document(DEVELOPMENT) //DEBUG
-        return environment
-    }
-
     private fun getMetadataCollection(): CollectionReference? {
-        return getEnvironmentReference()?.collection(
-            IFirestore.metadataCollection(
-                context
-            )
-        )
+        return firestore.collection(IFirestore.metadataCollection())
     }
 
-    private fun getRootCollection(): CollectionReference? {
-        return getEnvironmentReference()?.collection(
-            IFirestore.treedataCollection(
-                context
-            )
-        )
+    private fun getTreeDataCollection(): CollectionReference? {
+        return firestore.collection(IFirestore.treedataCollection())
     }
 
     private fun getDocument(path: String): DocumentReference? {
         val tokens = path.split("/").drop(1)
-        var collection = getRootCollection()
+        var collection = getTreeDataCollection()
         var document: DocumentReference? = null
         tokens.takeIf { it.size % 2 != 0 }?.forEachIndexed { index, token ->
             if (index % 2 == 0)
@@ -405,7 +384,7 @@ class Firestore(override var context: Context? = null) :
 
     private fun getCollection(path: String): CollectionReference? {
         val tokens = path.split("/").drop(1)
-        var collection = getRootCollection()
+        var collection = getTreeDataCollection()
         var document: DocumentReference? = null
         tokens.takeIf { it.size % 2 == 0 }?.forEachIndexed { index, token ->
             if (index % 2 == 0)

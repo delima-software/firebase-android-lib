@@ -12,24 +12,20 @@ interface IFirestore : IFirebase, ITreeDatabase {
     companion object {
 
         //COLLECTIONS
-        fun environmentsCollection(): String {
-            return "environments"
+        fun metadataCollection(): String {
+            return "metadata"
         }
 
-        fun metadataCollection(context: Context?): String {
-            return "${context?.getEnvironment()}_metadata"
-        }
-
-        fun treedataCollection(context: Context?): String {
-            return "${context?.getEnvironment()}_treedata"
+        fun treedataCollection(): String {
+            return "treedata"
         }
 
         fun getParentPath(documentPath: String): String {
             return documentPath.split("/").dropLast(1).joinToString("/")
         }
 
-        fun getChildsPath(context: Context?, documentPath: String): String {
-            return "$documentPath/${treedataCollection(context)}"
+        fun getChildsPath(documentPath: String): String {
+            return "$documentPath/${treedataCollection()}"
         }
     }
 }
