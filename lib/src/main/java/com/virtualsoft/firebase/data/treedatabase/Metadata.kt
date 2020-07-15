@@ -1,4 +1,4 @@
-package com.virtualsoft.firebase.data
+package com.virtualsoft.firebase.data.treedatabase
 
 import android.content.Context
 import com.virtualsoft.core.designpatterns.builder.IBuilder
@@ -17,17 +17,27 @@ class Metadata(override var id: String? = null,
                override var path: String? = null,
                override var updateMap: HashMap<String, Date>? = null) : IMetadata {
 
-    class Builder(context: Context? = null) : IBuilder<IMetadata> {
+    companion object {
 
-        override val building = Metadata(
-            id = generateUUID(),
-            name = context?.resources?.getString(R.string.default_metadata_name),
-            type = Metadata::class.java.simpleName,
-            creationDate = currentDate(),
-            lastUpdate = currentDate(),
-            path = IFirestore.metadataCollection(),
-            updateMap = hashMapOf()
-        )
+        fun buildMetadata(metadataId: String, context: Context?): Metadata {
+            return Builder(context)
+                .setId(metadataId)
+                .build()
+        }
+    }
+
+    class Builder(context: Context? = null) : IBuilder<Metadata> {
+
+        override val building =
+            Metadata(
+                id = generateUUID(),
+                name = context?.resources?.getString(R.string.default_metadata_name),
+                type = Metadata::class.java.simpleName,
+                creationDate = currentDate(),
+                lastUpdate = currentDate(),
+                path = IFirestore.metadataCollection(),
+                updateMap = hashMapOf()
+            )
 
         fun setId(id: String?): Builder {
             building.id = id
