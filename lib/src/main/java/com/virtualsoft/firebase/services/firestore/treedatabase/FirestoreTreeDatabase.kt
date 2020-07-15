@@ -1,28 +1,46 @@
-package com.virtualsoft.firebase.services.firestore
+package com.virtualsoft.firebase.services.firestore.treedatabase
 
 import android.content.Context
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.toObject
 import com.virtualsoft.core.service.database.data.ITreeData
 import com.virtualsoft.core.designpatterns.builder.IBuilder
+import com.virtualsoft.core.service.database.ITreeDatabase
 import com.virtualsoft.core.utils.DateUtils.currentDate
 import com.virtualsoft.core.utils.DateUtils.isBeforeDateTime
 import com.virtualsoft.core.utils.TextUtils.nextAlphabeticString
-import com.virtualsoft.firebase.data.IMetadata
-import com.virtualsoft.firebase.data.Metadata
+import com.virtualsoft.firebase.data.treedatabase.IMetadata
+import com.virtualsoft.firebase.data.treedatabase.Metadata
+import com.virtualsoft.firebase.services.firestore.FirestorePreferences
+import com.virtualsoft.firebase.services.firestore.IFirestore
 import com.virtualsoft.firebase.utils.LogUtils.logError
 import com.virtualsoft.firebase.utils.LogUtils.logSuccess
 
-class Firestore(override var context: Context? = null) :
-    IFirestore {
+class FirestoreTreeDatabase(override var context: Context? = null) :
+    IFirestore, ITreeDatabase {
+
+    companion object {
+
+        fun treedataCollection(): String {
+            return "treedata"
+        }
+
+        fun getParentPath(documentPath: String): String {
+            return documentPath.split("/").dropLast(1).joinToString("/")
+        }
+
+        fun getChildsPath(documentPath: String): String {
+            return "$documentPath/${treedataCollection()}"
+        }
+    }
 
     data class Properties(var dataTypeResolver: ((String) -> Class<out ITreeData>)? = null)
 
     private var metadataSnapshot: DocumentSnapshot? = null
-    private var firestoreProperties: Properties? = null
+    private var firestoreTreeDatabaseProperties: Properties? = null
 
     override val id: String
-        get() = Firestore::class.java.name
+        get() = FirestoreTreeDatabase::class.java.name
 
     private val firestore by lazy {
         FirebaseFirestore.getInstance()
@@ -31,10 +49,12 @@ class Firestore(override var context: Context? = null) :
     class Builder(context: Context?) : IBuilder<IFirestore> {
 
         override val building =
-            Firestore(context)
+            FirestoreTreeDatabase(
+                context
+            )
 
-        fun setFirestoreProperties(firestoreProperties: Properties?): Builder {
-            building.firestoreProperties = firestoreProperties
+        fun setFirestoreTreeDatabaseProperties(firestoreTreeDatabaseProperties: Properties?): Builder {
+            building.firestoreTreeDatabaseProperties = firestoreTreeDatabaseProperties
             return this
         }
     }
@@ -124,7 +144,7 @@ class Firestore(override var context: Context? = null) :
                     updateMap.remove(path)
                 else
                     updateMap[path] = currentDate
-                updateMap[IFirestore.getParentPath(path)] = currentDate
+                updateMap[getParentPath(path)] = currentDate
                 updateMetadata(documentId, IMetadata::updateMap.name, updateMap)
             }
         }
@@ -134,14 +154,22 @@ class Firestore(override var context: Context? = null) :
         val metadataId = path.split("/")[1]
         readMetadata(metadataId) { metadata ->
             var source = Source.DEFAULT
-            val lastRead = FirestorePreferences.getLastRead(path, context)
+            val lastRead =
+                FirestorePreferences.getLastRead(
+                    path,
+                    context
+                )
             val lastUpdate = metadata?.updateMap?.get(path)
             if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true)
                 source = Source.CACHE
             getDocument(path)?.get(source)
                 ?.addOnSuccessListener { document ->
-                    FirestorePreferences.setLastRead(path, currentDate(), context)
-                    val classType = firestoreProperties?.dataTypeResolver?.invoke(document.get("type").toString())
+                    FirestorePreferences.setLastRead(
+                        path,
+                        currentDate(),
+                        context
+                    )
+                    val classType = firestoreTreeDatabaseProperties?.dataTypeResolver?.invoke(document.get("type").toString())
                     if (classType != null) {
                         val data = document.toObject(classType)
                         if (data != null)
@@ -166,18 +194,26 @@ class Firestore(override var context: Context? = null) :
     override fun readTreeDataChilds(path: String, callback: (List<ITreeData>) -> Unit) {
         val metadataId = path.split("/")[1]
         readMetadata(metadataId) { metadata ->
-            val childsPath = IFirestore.getChildsPath(path)
+            val childsPath = getChildsPath(path)
             var source = Source.DEFAULT
-            val lastRead = FirestorePreferences.getLastRead(childsPath, context)
+            val lastRead =
+                FirestorePreferences.getLastRead(
+                    childsPath,
+                    context
+                )
             val lastUpdate = metadata?.updateMap?.get(childsPath)
             if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true)
                 source = Source.CACHE
             getCollection(childsPath)?.get(source)
                 ?.addOnSuccessListener { documents ->
-                    FirestorePreferences.setLastRead(childsPath, currentDate(), context)
+                    FirestorePreferences.setLastRead(
+                        childsPath,
+                        currentDate(),
+                        context
+                    )
                     val list = mutableListOf<ITreeData>()
                     for (document in documents) {
-                        val classType = firestoreProperties?.dataTypeResolver?.invoke(document.get("type").toString())
+                        val classType = firestoreTreeDatabaseProperties?.dataTypeResolver?.invoke(document.get("type").toString())
                         if (classType != null)
                             list.add(document.toObject(classType))
                     }
@@ -198,7 +234,7 @@ class Firestore(override var context: Context? = null) :
                     val tokens = path.split("/")
                     val metatadaId = tokens[1]
                     if (tokens.size <= 2)
-                        writeMetadata(metatadaId, IMetadata.buildMetadata(metatadaId, context))
+                        writeMetadata(metatadaId, Metadata.buildMetadata(metatadaId, context))
                     else
                         updateMapMetadata(metatadaId, path, type = data.type)
                     logSuccess("WRITE_TREE_DATA", "write tree data at the specified path success")
@@ -218,7 +254,7 @@ class Firestore(override var context: Context? = null) :
     override fun writeTreeDataChilds(path: String, childs: List<ITreeData>, callback: ((Boolean) -> Unit)?) {
         var completed = 0
         for (child in childs) {
-            child.path = IFirestore.getChildsPath(path)
+            child.path = getChildsPath(path)
             writeTreeData(child.completePath(), child) { wrote ->
                 if (wrote)
                     completed++
@@ -334,20 +370,29 @@ class Firestore(override var context: Context? = null) :
         var source = Source.DEFAULT
         readMetadata(rootId) { metadata ->
             val allType = allType(value.toString())
-            val lastRead = FirestorePreferences.getLastRead(allType, context)
+            val lastRead =
+                FirestorePreferences.getLastRead(
+                    allType,
+                    context
+                )
             val lastUpdate = metadata?.updateMap?.get(allType)
             if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true)
                 source = Source.CACHE
-            val rootDocumentPath = "${IFirestore.treedataCollection()}/$rootId"
-            firestore.collectionGroup(IFirestore.treedataCollection())
+            val rootDocumentPath = "${treedataCollection()}/$rootId"
+            firestore.collectionGroup(treedataCollection())
                 .whereGreaterThanOrEqualTo(ITreeData::path.name, rootDocumentPath)
                 .whereLessThan(ITreeData::path.name, rootDocumentPath.nextAlphabeticString())
-                .whereEqualTo(ITreeData::type.name, value).get(source)
+                .whereEqualTo(ITreeData::type.name, value)
+                .get(source)
                 .addOnSuccessListener { documents ->
-                    FirestorePreferences.setLastRead(allType, currentDate(), context)
+                    FirestorePreferences.setLastRead(
+                        allType,
+                        currentDate(),
+                        context
+                    )
                     val list = mutableListOf<ITreeData>()
                     for (document in documents) {
-                        val classType = firestoreProperties?.dataTypeResolver?.invoke(document.get("type").toString())
+                        val classType = firestoreTreeDatabaseProperties?.dataTypeResolver?.invoke(document.get("type").toString())
                         if (classType != null)
                             list.add(document.toObject(classType))
                     }
@@ -366,7 +411,7 @@ class Firestore(override var context: Context? = null) :
     }
 
     private fun getTreeDataCollection(): CollectionReference? {
-        return firestore.collection(IFirestore.treedataCollection())
+        return firestore.collection(treedataCollection())
     }
 
     private fun getDocument(path: String): DocumentReference? {

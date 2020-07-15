@@ -9,13 +9,16 @@ import com.virtualsoft.firebase.IFirebase
 import com.virtualsoft.firebase.services.analytics.AnalyticsFactory
 import com.virtualsoft.firebase.services.authentication.AuthenticationFactory
 import com.virtualsoft.firebase.services.authentication.Authentication
-import com.virtualsoft.firebase.services.firestore.Firestore
-import com.virtualsoft.firebase.services.firestore.FirestoreFactory
+import com.virtualsoft.firebase.services.firestore.database.FirestoreDatabase
+import com.virtualsoft.firebase.services.firestore.database.FirestoreDatabaseFactory
+import com.virtualsoft.firebase.services.firestore.treedatabase.FirestoreTreeDatabase
+import com.virtualsoft.firebase.services.firestore.treedatabase.FirestoreTreeDatabaseFactory
 
 class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
 
     var authenticationProperties: Authentication.Properties? = null
-    var firestoreProperties: Firestore.Properties? = null
+    var firestoreDatabaseProperties: FirestoreDatabase.Properties? = null
+    var firestoreTreeDatabaseProperties: FirestoreTreeDatabase.Properties? = null
 
     class Builder(val context: Context? = null) : IServiceChainBuilder<IFirebase> {
 
@@ -23,7 +26,16 @@ class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
             FirebaseChain(context)
 
         init {
-            building.factories.add(FirestoreFactory(context))
+            building.factories.add(
+                FirestoreDatabaseFactory(
+                    context
+                )
+            )
+            building.factories.add(
+                FirestoreTreeDatabaseFactory(
+                    context
+                )
+            )
             building.factories.add(AuthenticationFactory(context))
             building.factories.add(AnalyticsFactory(context))
         }
@@ -33,16 +45,24 @@ class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
             return this
         }
 
-        fun setFirestoreProperties(firestoreProperties: Firestore.Properties?): Builder {
-            building.firestoreProperties = firestoreProperties
+        fun setFirestoreDatabaseProperties(firestoreDatabaseProperties: FirestoreDatabase.Properties?): Builder {
+            building.firestoreDatabaseProperties = firestoreDatabaseProperties
+            return this
+        }
+
+        fun setFirestoreTreeDatabaseProperties(firestoreTreeDatabaseProperties: FirestoreTreeDatabase.Properties?): Builder {
+            building.firestoreTreeDatabaseProperties = firestoreTreeDatabaseProperties
             return this
         }
 
         override fun build(): FirebaseChain {
-            val firestoreFactory = building.factories[0] as? FirestoreFactory
-            firestoreFactory?.firestoreProperties = building.firestoreProperties
+            val firestoreDatabaseFactory = building.factories[0] as? FirestoreDatabaseFactory
+            firestoreDatabaseFactory?.firestoreDatabaseProperties = building.firestoreDatabaseProperties
 
-            val authenticationFactory = building.factories[1] as? AuthenticationFactory
+            val firestoreTreeDatabaseFactory = building.factories[1] as? FirestoreTreeDatabaseFactory
+            firestoreTreeDatabaseFactory?.firestoreTreeDatabaseProperties = building.firestoreTreeDatabaseProperties
+
+            val authenticationFactory = building.factories[2] as? AuthenticationFactory
             authenticationFactory?.authenticationProperties = building.authenticationProperties
             return building
         }
