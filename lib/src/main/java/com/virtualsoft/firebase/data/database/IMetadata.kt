@@ -1,5 +1,5 @@
 package com.virtualsoft.firebase.data.database
 
-import com.virtualsoft.core.service.database.data.IDocument
+import com.virtualsoft.firebase.services.firestore.database.IDocument
 
 interface IMetadata : IDocument

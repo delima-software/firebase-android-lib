@@ -3,9 +3,7 @@ package com.virtualsoft.firebase.services.firestore.treedatabase
 import android.content.Context
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.toObject
-import com.virtualsoft.core.service.database.data.ITreeData
 import com.virtualsoft.core.designpatterns.builder.IBuilder
-import com.virtualsoft.core.service.database.ITreeDatabase
 import com.virtualsoft.core.utils.DateUtils.currentDate
 import com.virtualsoft.core.utils.DateUtils.isBeforeDateTime
 import com.virtualsoft.core.utils.TextUtils.nextAlphabeticString

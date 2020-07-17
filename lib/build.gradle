@@ -31,6 +31,7 @@ dependencies {
     implementation "com.google.android.gms:play-services-auth:$dependency.google_play_services_auth"
 
     //Firebase
+    implementation "com.google.firebase:firebase-common-ktx:$dependency.firebase_common"
     implementation "com.google.firebase:firebase-analytics:$dependency.firebase_analytics"
     implementation "com.google.firebase:firebase-auth:$dependency.firebase_auth"
     implementation "com.google.firebase:firebase-firestore-ktx:$dependency.firebase_firestore"
@@ -41,6 +42,7 @@ dependencies {
 
     //Jetbrains
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$dependency.jetbrains_kotlin"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$dependency.jetbrains_kotlin_coroutines_play_services"
 
     //Virtualsoft
     implementation "org.bitbucket.virtualsoft-libs:core-android-lib:$dependency.virtualsoft_core"

@@ -1,6 +1,6 @@
 package com.virtualsoft.firebase.data.treedatabase
 
-import com.virtualsoft.core.service.database.data.ITreeData
+import com.virtualsoft.firebase.services.firestore.treedatabase.ITreeData
 import java.util.*
 import kotlin.collections.HashMap
 
