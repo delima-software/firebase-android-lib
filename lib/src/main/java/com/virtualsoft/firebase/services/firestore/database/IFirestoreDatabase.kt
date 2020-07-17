@@ -10,7 +10,7 @@ interface IFirestoreDatabase {
 
     suspend fun readCollection(collectionReference: CollectionReference): List<IDocument>
 
-    suspend fun readCollection(collectionId: String, query: Query): List<IDocument>
+    suspend fun readCollection(collectionReference: CollectionReference, query: Query): List<IDocument>
 
     suspend fun writeDocument(documentReference: DocumentReference, data: IDocument): Boolean
 
