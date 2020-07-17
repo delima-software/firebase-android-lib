@@ -64,7 +64,7 @@ class FirestoreDatabase(override var context: Context? = null) :
         firestore.collection(COLLECTIONS.metadata.name).whereEqualTo("name", metadataName).addSnapshotListener { collectionSnapshot, firebaseFirestoreException ->
             when {
                 firebaseFirestoreException != null -> {
-                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore")
+                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataName", firebaseFirestoreException)
                 }
                 collectionSnapshot?.isEmpty == false -> {
                     val index = getLastMetadataIndex(collectionSnapshot.toObjects())
@@ -72,7 +72,7 @@ class FirestoreDatabase(override var context: Context? = null) :
                     LogUtils.logSuccess("READ_METADATA", "read metadata from firestore success")
                 }
                 else -> {
-                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore")
+                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataName")
                 }
             }
         }
@@ -86,7 +86,7 @@ class FirestoreDatabase(override var context: Context? = null) :
                 return try {
                     val collection = firestore.collection(COLLECTIONS.metadata.name).whereEqualTo("name", metadataName).get().await()
                     if (collection.isEmpty) {
-                        LogUtils.logError("READ_METADATA", "cannot read metadata from firestore")
+                        LogUtils.logError("READ_METADATA", "metadata does not exists: $metadataName")
                         null
                     }
                     else {
@@ -97,7 +97,7 @@ class FirestoreDatabase(override var context: Context? = null) :
                     }
                 }
                 catch (e: Exception) {
-                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore", e)
+                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataName", e)
                     null
                 }
             }
@@ -107,7 +107,7 @@ class FirestoreDatabase(override var context: Context? = null) :
                 return metadata
             }
             else -> {
-                LogUtils.logError("READ_METADATA", "cannot read metadata from firestore")
+                LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataName")
                 return null
             }
         }
@@ -122,7 +122,7 @@ class FirestoreDatabase(override var context: Context? = null) :
             true
         }
         catch (e: Exception) {
-            LogUtils.logError("WRITE_METADATA", "cannot write metadata to firestore", e)
+            LogUtils.logError("WRITE_METADATA", "cannot write metadata to firestore: $metadataName", e)
             false
         }
     }
@@ -137,12 +137,12 @@ class FirestoreDatabase(override var context: Context? = null) :
                 true
             }
             else {
-                LogUtils.logError("UPDATE_METADATA", "cannot update metadata to firestore")
+                LogUtils.logError("UPDATE_METADATA", "cannot update metadata to firestore: $metadataName")
                 false
             }
         }
         catch (e: Exception) {
-            LogUtils.logError("UPDATE_METADATA", "cannot update metadata to firestore", e)
+            LogUtils.logError("UPDATE_METADATA", "cannot update metadata to firestore: $metadataName", e)
             false
         }
     }
@@ -157,12 +157,12 @@ class FirestoreDatabase(override var context: Context? = null) :
                 true
             }
             else {
-                LogUtils.logError("DELETE_METADATA", "cannot delete metadata from firestore")
+                LogUtils.logError("DELETE_METADATA", "cannot delete metadata from firestore: $metadataName")
                 false
             }
         }
         catch (e: Exception) {
-            LogUtils.logError("DELETE_METADATA", "cannot delete metadata from firestore", e)
+            LogUtils.logError("DELETE_METADATA", "cannot delete metadata from firestore: $metadataName", e)
             false
         }
     }
@@ -184,7 +184,7 @@ class FirestoreDatabase(override var context: Context? = null) :
         catch (e: Exception) {
             LogUtils.logError(
                 "READ_DATA",
-                "cannot read data with the specified id",
+                "cannot read data at the specified path: ${documentReference.path}",
                 e
             )
             null
@@ -212,7 +212,7 @@ class FirestoreDatabase(override var context: Context? = null) :
         catch (e: Exception) {
             LogUtils.logError(
                 "READ_DATA",
-                "cannot read data at the specified path",
+                "cannot read data at the specified path: ${collectionReference.path}",
                 e
             )
             listOf()
@@ -240,7 +240,7 @@ class FirestoreDatabase(override var context: Context? = null) :
         catch (e: Exception) {
             LogUtils.logError(
                 "READ_DATA",
-                "cannot read data at the specified path",
+                "cannot read data at the specified path: ${collectionReference.path}",
                 e
             )
             listOf()
@@ -259,7 +259,7 @@ class FirestoreDatabase(override var context: Context? = null) :
         catch (e: Exception) {
             LogUtils.logError(
                 "WRITE_DATA",
-                "cannot write data at the specified path",
+                "cannot write data at the specified path: ${documentReference.path}",
                 e
             )
             false
@@ -278,7 +278,7 @@ class FirestoreDatabase(override var context: Context? = null) :
         catch (e: Exception) {
             LogUtils.logError(
                 "UPDATE_DATA",
-                "cannot update data at the specified path",
+                "cannot update data at the specified path: ${documentReference.path}",
                 e
             )
             false
@@ -297,7 +297,7 @@ class FirestoreDatabase(override var context: Context? = null) :
         catch (e: Exception) {
             LogUtils.logError(
                 "DELETE_DATA",
-                "cannot delete data at the specified path",
+                "cannot delete data at the specified path: ${documentReference.path}",
                 e
             )
             false
