@@ -113,11 +113,12 @@ class FirestoreDatabase(override var context: Context? = null) :
         }
     }
 
-    private suspend fun writeMetadata(metadataName: String, metadata: IMetadata): Boolean {
+    private suspend fun writeMetadata(metadataName: String): Boolean {
         return try {
-            val metadataStored = readMetadata(metadataName)
-            val metadataId = metadataStored?.id
-            firestore.collection(COLLECTIONS.metadata.name).document(metadataId?:generateUUID()).set(metadata).await()
+            var metadata = readMetadata(metadataName)
+            if (metadata == null)
+                metadata = Metadata.buildMetadata(metadataName, context)
+            firestore.collection(COLLECTIONS.metadata.name).document(metadata.id!!).set(metadata).await()
             LogUtils.logSuccess("WRITE_METADATA", "write metadata to firestore success")
             true
         }
@@ -252,8 +253,8 @@ class FirestoreDatabase(override var context: Context? = null) :
             documentReference.set(data).await()
             val documentMetadataName = documentReference.path
             val collectionMetadataName = documentReference.parent.path
-            writeMetadata(documentMetadataName, Metadata.buildMetadata(documentMetadataName, context))
-            writeMetadata(collectionMetadataName, Metadata.buildMetadata(collectionMetadataName, context))
+            writeMetadata(documentMetadataName)
+            writeMetadata(collectionMetadataName)
             true
         }
         catch (e: Exception) {
@@ -271,8 +272,8 @@ class FirestoreDatabase(override var context: Context? = null) :
             documentReference.update(field, value).await()
             val documentMetadataName = documentReference.path
             val collectionMetadataName = documentReference.parent.path
-            writeMetadata(documentMetadataName, Metadata.buildMetadata(documentMetadataName, context))
-            writeMetadata(collectionMetadataName, Metadata.buildMetadata(collectionMetadataName, context))
+            writeMetadata(documentMetadataName)
+            writeMetadata(collectionMetadataName)
             true
         }
         catch (e: Exception) {
@@ -291,7 +292,7 @@ class FirestoreDatabase(override var context: Context? = null) :
             val documentMetadataName = documentReference.path
             val collectionMetadataName = documentReference.parent.path
             deleteMetadata(documentMetadataName)
-            writeMetadata(collectionMetadataName, Metadata.buildMetadata(collectionMetadataName, context))
+            writeMetadata(collectionMetadataName)
             true
         }
         catch (e: Exception) {
