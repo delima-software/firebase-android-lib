@@ -15,9 +15,9 @@ class Metadata(override var id: String? = null,
 
     companion object {
 
-        fun buildMetadata(metadataId: String, context: Context?): Metadata {
+        fun buildMetadata(metadataName: String, context: Context?): Metadata {
             return Builder(context)
-                .setId(metadataId)
+                .setName(metadataName)
                 .build()
         }
     }
