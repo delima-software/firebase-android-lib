@@ -86,7 +86,7 @@ class FirestoreDatabase(override var context: Context? = null) :
                 return try {
                     val collection = firestore.collection(COLLECTIONS.metadata.name).whereEqualTo("name", metadataName).get().await()
                     if (collection.isEmpty) {
-                        LogUtils.logError("READ_METADATA", "metadata does not exists: $metadataName")
+                        LogUtils.logError("READ_METADATA", "cache fault - metadata does not exists: $metadataName")
                         null
                     }
                     else {
@@ -103,11 +103,11 @@ class FirestoreDatabase(override var context: Context? = null) :
             }
             metadataSnapshot.exists() -> {
                 val metadata = metadataSnapshot.toObject<Metadata>()
-                LogUtils.logSuccess("READ_METADATA", "read metadata from firestore success")
+                LogUtils.logSuccess("READ_METADATA", "cache hit - read metadata from firestore success")
                 return metadata
             }
             else -> {
-                LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataName")
+                LogUtils.logError("READ_METADATA", "cache fault - cannot read metadata from firestore: $metadataName")
                 return null
             }
         }
