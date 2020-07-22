@@ -131,7 +131,7 @@ class FirestoreDatabase(override var context: Context? = null) :
     }
 
     override suspend fun readDocument(documentReference: DocumentReference): IDocument? {
-        val metadataId = documentReference.path
+        val metadataId = documentReference.path.replace("/", "")
         val metadata = readMetadata(metadataId)
         var source = Source.DEFAULT
         val lastRead = FirestorePreferences.getLastRead(metadataId, context)
@@ -155,7 +155,7 @@ class FirestoreDatabase(override var context: Context? = null) :
     }
 
     override suspend fun readCollection(collectionReference: CollectionReference): List<IDocument> {
-        val metadataId = collectionReference.path
+        val metadataId = collectionReference.path.replace("/", "")
         val metadata = readMetadata(metadataId)
         var source = Source.DEFAULT
         val lastRead = FirestorePreferences.getLastRead(metadataId, context)
@@ -183,7 +183,7 @@ class FirestoreDatabase(override var context: Context? = null) :
     }
 
     override suspend fun readCollection(collectionReference: CollectionReference, query: Query): List<IDocument> {
-        val metadataId = collectionReference.path
+        val metadataId = collectionReference.path.replace("/", "")
         val metadata = readMetadata(metadataId)
         var source = Source.DEFAULT
         val lastRead = FirestorePreferences.getLastRead(metadataId, context)
@@ -213,8 +213,8 @@ class FirestoreDatabase(override var context: Context? = null) :
     override suspend fun writeDocument(documentReference: DocumentReference, data: IDocument): Boolean {
         return try {
             documentReference.set(data).await()
-            val documentMetadataId = documentReference.path
-            val collectionMetadataId = documentReference.parent.path
+            val documentMetadataId = documentReference.path.replace("/", "")
+            val collectionMetadataId = documentReference.parent.path.replace("/", "")
             writeMetadata(documentMetadataId)
             writeMetadata(collectionMetadataId)
             true
@@ -232,8 +232,8 @@ class FirestoreDatabase(override var context: Context? = null) :
     override suspend fun updateDocument(documentReference: DocumentReference, field: String, value: Any): Boolean {
         return try {
             documentReference.update(field, value).await()
-            val documentMetadataId = documentReference.path
-            val collectionMetadataId = documentReference.parent.path
+            val documentMetadataId = documentReference.path.replace("/", "")
+            val collectionMetadataId = documentReference.parent.path.replace("/", "")
             writeMetadata(documentMetadataId)
             writeMetadata(collectionMetadataId)
             true
@@ -251,8 +251,8 @@ class FirestoreDatabase(override var context: Context? = null) :
     override suspend fun deleteDocument(documentReference: DocumentReference): Boolean {
         return try {
             documentReference.delete().await()
-            val documentMetadataId = documentReference.path
-            val collectionMetadataId = documentReference.parent.path
+            val documentMetadataId = documentReference.path.replace("/", "")
+            val collectionMetadataId = documentReference.parent.path.replace("/", "")
             deleteMetadata(documentMetadataId)
             writeMetadata(collectionMetadataId)
             true
