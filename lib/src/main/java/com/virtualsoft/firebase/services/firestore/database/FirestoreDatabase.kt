@@ -7,7 +7,6 @@ import com.google.firebase.firestore.ktx.toObjects
 import com.virtualsoft.core.designpatterns.builder.IBuilder
 import com.virtualsoft.core.utils.DateUtils.currentDate
 import com.virtualsoft.core.utils.DateUtils.isBeforeDateTime
-import com.virtualsoft.core.utils.GeneratorUtils.generateUUID
 import com.virtualsoft.firebase.data.database.Metadata
 import com.virtualsoft.firebase.data.database.IMetadata
 import com.virtualsoft.firebase.services.firestore.FirestorePreferences
@@ -47,57 +46,36 @@ class FirestoreDatabase(override var context: Context? = null) :
         }
     }
 
-    private fun getLastMetadataIndex(collection: List<Metadata>): Int {
-        var i = 0
-        collection.forEachIndexed { index, document ->
-            val metadataLastUpdate = collection[i].lastUpdate
-            val documentLastUpdate = document.lastUpdate
-            if (metadataLastUpdate != null && documentLastUpdate != null) {
-                if (metadataLastUpdate.isBeforeDateTime(documentLastUpdate))
-                    i = index
-            }
-        }
-        return i
-    }
-
-    private fun addMetadataSnapshotListener(metadataName: String) {
-        firestore.collection(COLLECTIONS.metadata.name).whereEqualTo("name", metadataName).addSnapshotListener { collectionSnapshot, firebaseFirestoreException ->
+    private fun addMetadataSnapshotListener(metadataId: String) {
+        firestore.collection(COLLECTIONS.metadata.name).document(metadataId).addSnapshotListener { documentSnapshot, firebaseFirestoreException ->
             when {
                 firebaseFirestoreException != null -> {
-                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataName", firebaseFirestoreException)
+                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataId", firebaseFirestoreException)
                 }
-                collectionSnapshot?.isEmpty == false -> {
-                    val index = getLastMetadataIndex(collectionSnapshot.toObjects())
-                    metadataSnapshotMap[metadataName] = collectionSnapshot.elementAt(index)
+                documentSnapshot?.exists() == false -> {
+                    metadataSnapshotMap[metadataId] = documentSnapshot
                     LogUtils.logSuccess("READ_METADATA", "read metadata from firestore success")
                 }
                 else -> {
-                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataName")
+                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataId")
                 }
             }
         }
     }
 
-    private suspend fun readMetadata(metadataName: String): IMetadata? {
-        val metadataSnapshot = metadataSnapshotMap[metadataName]
+    private suspend fun readMetadata(metadataId: String): IMetadata? {
+        val metadataSnapshot = metadataSnapshotMap[metadataId]
         when {
             metadataSnapshot == null -> {
-                addMetadataSnapshotListener(metadataName)
+                addMetadataSnapshotListener(metadataId)
                 return try {
-                    val collection = firestore.collection(COLLECTIONS.metadata.name).whereEqualTo("name", metadataName).get().await()
-                    if (collection.isEmpty) {
-                        LogUtils.logError("READ_METADATA", "cache fault - metadata does not exists: $metadataName")
-                        null
-                    }
-                    else {
-                        LogUtils.logSuccess("READ_METADATA", "read metadata from firestore success")
-                        val index = getLastMetadataIndex(collection.toObjects())
-                        val metadata = collection.elementAt(index).toObject<Metadata>()
-                        metadata
-                    }
+                    val documentSnapshot = firestore.collection(COLLECTIONS.metadata.name).document(metadataId).get().await()
+                    val metadata = documentSnapshot.toObject<Metadata>()
+                    LogUtils.logSuccess("READ_METADATA", "read metadata from firestore success")
+                    metadata
                 }
                 catch (e: Exception) {
-                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataName", e)
+                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataId", e)
                     null
                 }
             }
@@ -107,78 +85,62 @@ class FirestoreDatabase(override var context: Context? = null) :
                 return metadata
             }
             else -> {
-                LogUtils.logError("READ_METADATA", "cache fault - cannot read metadata from firestore: $metadataName")
+                LogUtils.logError("READ_METADATA", "cache fault - cannot read metadata from firestore: $metadataId")
                 return null
             }
         }
     }
 
-    private suspend fun writeMetadata(metadataName: String): Boolean {
+    private suspend fun writeMetadata(metadataId: String): Boolean {
         return try {
-            var metadata = readMetadata(metadataName)
+            var metadata = readMetadata(metadataId)
             if (metadata == null)
-                metadata = Metadata.buildMetadata(metadataName, context)
-            firestore.collection(COLLECTIONS.metadata.name).document(metadata.id!!).set(metadata).await()
+                metadata = Metadata.buildMetadata(metadataId, context)
+            firestore.collection(COLLECTIONS.metadata.name).document(metadataId).set(metadata).await()
             LogUtils.logSuccess("WRITE_METADATA", "write metadata to firestore success")
             true
         }
         catch (e: Exception) {
-            LogUtils.logError("WRITE_METADATA", "cannot write metadata to firestore: $metadataName", e)
+            LogUtils.logError("WRITE_METADATA", "cannot write metadata to firestore: $metadataId", e)
             false
         }
     }
 
-    private suspend fun updateMetadata(metadataName: String, field: String, value: Any): Boolean {
+    private suspend fun updateMetadata(metadataId: String, field: String, value: Any): Boolean {
         return try {
-            val metadataStored = readMetadata(metadataName)
-            val metadataId = metadataStored?.id
-            if (metadataId != null) {
-                firestore.collection(COLLECTIONS.metadata.name).document(metadataId).update(field, value).await()
-                LogUtils.logSuccess("UPDATE_METADATA", "update metadata to firestore success")
-                true
-            }
-            else {
-                LogUtils.logError("UPDATE_METADATA", "cannot update metadata to firestore: $metadataName")
-                false
-            }
+            firestore.collection(COLLECTIONS.metadata.name).document(metadataId).update(field, value).await()
+            LogUtils.logSuccess("UPDATE_METADATA", "update metadata to firestore success")
+            true
         }
         catch (e: Exception) {
-            LogUtils.logError("UPDATE_METADATA", "cannot update metadata to firestore: $metadataName", e)
+            LogUtils.logError("UPDATE_METADATA", "cannot update metadata to firestore: $metadataId", e)
             false
         }
     }
 
-    private suspend fun deleteMetadata(metadataName: String): Boolean {
+    private suspend fun deleteMetadata(metadataId: String): Boolean {
         return try {
-            val metadataStored = readMetadata(metadataName)
-            val metadataId = metadataStored?.id
-            if (metadataId != null) {
-                firestore.collection(COLLECTIONS.metadata.name).document(metadataId).delete().await()
-                LogUtils.logSuccess("DELETE_METADATA", "delete metadata from firestore success")
-                true
-            }
-            else {
-                LogUtils.logError("DELETE_METADATA", "cannot delete metadata from firestore: $metadataName")
-                false
-            }
+            firestore.collection(COLLECTIONS.metadata.name).document(metadataId).delete().await()
+            LogUtils.logSuccess("DELETE_METADATA", "delete metadata from firestore success")
+            true
         }
         catch (e: Exception) {
-            LogUtils.logError("DELETE_METADATA", "cannot delete metadata from firestore: $metadataName", e)
+            LogUtils.logError("DELETE_METADATA", "cannot delete metadata from firestore: $metadataId", e)
             false
         }
     }
 
     override suspend fun readDocument(documentReference: DocumentReference): IDocument? {
-        val metadataName = documentReference.path
-        val metadata = readMetadata(metadataName)
+        val metadataId = documentReference.path
+        val metadata = readMetadata(metadataId)
         var source = Source.DEFAULT
-        val lastRead = FirestorePreferences.getLastRead(metadataName, context)
+        val lastRead = FirestorePreferences.getLastRead(metadataId, context)
         val lastUpdate = metadata?.lastUpdate
         if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true)
             source = Source.CACHE
         return try {
             val document = documentReference.get(source).await()
-            FirestorePreferences.setLastRead(metadataName, currentDate(), context)
+            FirestorePreferences.setLastRead(metadataId, currentDate(), context)
             val classType = firestoreDatabaseProperties?.dataTypeResolver?.invoke(document.get("type").toString())
             document.toObject(classType!!)
         }
@@ -193,16 +155,16 @@ class FirestoreDatabase(override var context: Context? = null) :
     }
 
     override suspend fun readCollection(collectionReference: CollectionReference): List<IDocument> {
-        val metadataName = collectionReference.path
-        val metadata = readMetadata(metadataName)
+        val metadataId = collectionReference.path
+        val metadata = readMetadata(metadataId)
         var source = Source.DEFAULT
-        val lastRead = FirestorePreferences.getLastRead(metadataName, context)
+        val lastRead = FirestorePreferences.getLastRead(metadataId, context)
         val lastUpdate = metadata?.lastUpdate
         if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true)
             source = Source.CACHE
         return try {
             val collection = collectionReference.get(source).await()
-            FirestorePreferences.setLastRead(metadataName, currentDate(), context)
+            FirestorePreferences.setLastRead(metadataId, currentDate(), context)
             val list = mutableListOf<IDocument>()
             for (document in collection) {
                 val classType = firestoreDatabaseProperties?.dataTypeResolver?.invoke(document.get("type").toString())
@@ -221,16 +183,16 @@ class FirestoreDatabase(override var context: Context? = null) :
     }
 
     override suspend fun readCollection(collectionReference: CollectionReference, query: Query): List<IDocument> {
-        val metadataName = collectionReference.path
-        val metadata = readMetadata(metadataName)
+        val metadataId = collectionReference.path
+        val metadata = readMetadata(metadataId)
         var source = Source.DEFAULT
-        val lastRead = FirestorePreferences.getLastRead(metadataName, context)
+        val lastRead = FirestorePreferences.getLastRead(metadataId, context)
         val lastUpdate = metadata?.lastUpdate
         if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true)
             source = Source.CACHE
         return try {
             val collection = query.get(source).await()
-            FirestorePreferences.setLastRead(metadataName, currentDate(), context)
+            FirestorePreferences.setLastRead(metadataId, currentDate(), context)
             val list = mutableListOf<IDocument>()
             for (document in collection) {
                 val classType = firestoreDatabaseProperties?.dataTypeResolver?.invoke(document.get("type").toString())
@@ -251,10 +213,10 @@ class FirestoreDatabase(override var context: Context? = null) :
     override suspend fun writeDocument(documentReference: DocumentReference, data: IDocument): Boolean {
         return try {
             documentReference.set(data).await()
-            val documentMetadataName = documentReference.path
-            val collectionMetadataName = documentReference.parent.path
-            writeMetadata(documentMetadataName)
-            writeMetadata(collectionMetadataName)
+            val documentMetadataId = documentReference.path
+            val collectionMetadataId = documentReference.parent.path
+            writeMetadata(documentMetadataId)
+            writeMetadata(collectionMetadataId)
             true
         }
         catch (e: Exception) {
@@ -270,10 +232,10 @@ class FirestoreDatabase(override var context: Context? = null) :
     override suspend fun updateDocument(documentReference: DocumentReference, field: String, value: Any): Boolean {
         return try {
             documentReference.update(field, value).await()
-            val documentMetadataName = documentReference.path
-            val collectionMetadataName = documentReference.parent.path
-            writeMetadata(documentMetadataName)
-            writeMetadata(collectionMetadataName)
+            val documentMetadataId = documentReference.path
+            val collectionMetadataId = documentReference.parent.path
+            writeMetadata(documentMetadataId)
+            writeMetadata(collectionMetadataId)
             true
         }
         catch (e: Exception) {
@@ -289,10 +251,10 @@ class FirestoreDatabase(override var context: Context? = null) :
     override suspend fun deleteDocument(documentReference: DocumentReference): Boolean {
         return try {
             documentReference.delete().await()
-            val documentMetadataName = documentReference.path
-            val collectionMetadataName = documentReference.parent.path
-            deleteMetadata(documentMetadataName)
-            writeMetadata(collectionMetadataName)
+            val documentMetadataId = documentReference.path
+            val collectionMetadataId = documentReference.parent.path
+            deleteMetadata(documentMetadataId)
+            writeMetadata(collectionMetadataId)
             true
         }
         catch (e: Exception) {

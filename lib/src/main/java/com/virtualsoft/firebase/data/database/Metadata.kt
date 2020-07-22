@@ -3,7 +3,9 @@ package com.virtualsoft.firebase.data.database
 import android.content.Context
 import com.virtualsoft.core.designpatterns.builder.IBuilder
 import com.virtualsoft.core.utils.DateUtils
+import com.virtualsoft.core.utils.DateUtils.currentDate
 import com.virtualsoft.core.utils.GeneratorUtils
+import com.virtualsoft.core.utils.GeneratorUtils.generateUUID
 import com.virtualsoft.firebase.R
 import java.util.*
 
@@ -15,9 +17,10 @@ class Metadata(override var id: String? = null,
 
     companion object {
 
-        fun buildMetadata(metadataName: String, context: Context?): Metadata {
+        fun buildMetadata(metadataId: String, context: Context?): Metadata {
             return Builder(context)
-                .setName(metadataName)
+                .setId(metadataId)
+                .setName(metadataId)
                 .build()
         }
     }
@@ -26,11 +29,11 @@ class Metadata(override var id: String? = null,
 
         override val building =
             Metadata(
-                id = GeneratorUtils.generateUUID(),
+                id = generateUUID(),
                 name = context?.resources?.getString(R.string.default_metadata_name),
                 type = Metadata::class.java.simpleName,
-                creationDate = DateUtils.currentDate(),
-                lastUpdate = DateUtils.currentDate()
+                creationDate = currentDate(),
+                lastUpdate = currentDate()
             )
 
         fun setId(id: String?): Builder {
