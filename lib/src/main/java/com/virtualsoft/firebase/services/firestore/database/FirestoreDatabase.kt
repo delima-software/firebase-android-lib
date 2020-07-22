@@ -51,14 +51,14 @@ class FirestoreDatabase(override var context: Context? = null) :
         firestore.collection(COLLECTIONS.metadata.name).document(metadataId).addSnapshotListener { documentSnapshot, firebaseFirestoreException ->
             when {
                 firebaseFirestoreException != null -> {
-                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataId", firebaseFirestoreException)
+                    LogUtils.logError("READ_METADATA", "snapshot fault - cannot read metadata from firestore: $metadataId", firebaseFirestoreException)
                 }
                 documentSnapshot?.exists() == true -> {
                     metadataSnapshotMap[metadataId] = documentSnapshot
-                    LogUtils.logSuccess("READ_METADATA", "read metadata from firestore success")
+                    LogUtils.logSuccess("READ_METADATA", "snapshot hit - read metadata from firestore success")
                 }
                 else -> {
-                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataId")
+                    LogUtils.logError("READ_METADATA", "snapshot fault - cannot read metadata from firestore: $metadataId")
                 }
             }
         }
@@ -76,17 +76,17 @@ class FirestoreDatabase(override var context: Context? = null) :
                     metadata
                 }
                 catch (e: Exception) {
-                    LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataId", e)
+                    LogUtils.logError("READ_METADATA", "snapshot fault - cannot read metadata from firestore: $metadataId", e)
                     null
                 }
             }
             metadataSnapshot.exists() -> {
                 val metadata = metadataSnapshot.toObject<Metadata>()
-                LogUtils.logSuccess("READ_METADATA", "cache hit - read metadata from firestore success")
+                LogUtils.logSuccess("READ_METADATA", "snapshot hit - read metadata from firestore success")
                 return metadata
             }
             else -> {
-                LogUtils.logError("READ_METADATA", "cache fault - cannot read metadata from firestore: $metadataId")
+                LogUtils.logError("READ_METADATA", "snapshot fault - cannot read metadata from firestore: $metadataId")
                 return null
             }
         }
@@ -137,15 +137,12 @@ class FirestoreDatabase(override var context: Context? = null) :
         var source = Source.DEFAULT
         val lastRead = FirestorePreferences.getLastRead(metadataId, context)
         val lastUpdate = metadata?.lastUpdate
-        Log.d("READ_OPERATION", "lastRead: $lastRead")
-        Log.d("READ_OPERATION", "lastUpdate: $lastUpdate")
         if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true) {
-            Log.d("READ_OPERATION", "reading from cache")
+            Log.d("READ_DATA", "reading from cache")
             source = Source.CACHE
         }
-        else {
-            Log.d("READ_OPERATION", "reading from server")
-        }
+        else
+            Log.d("READ_DATA", "reading from server")
         return try {
             val document = documentReference.get(source).await()
             FirestorePreferences.setLastRead(metadataId, currentDate(), context)
@@ -168,8 +165,12 @@ class FirestoreDatabase(override var context: Context? = null) :
         var source = Source.DEFAULT
         val lastRead = FirestorePreferences.getLastRead(metadataId, context)
         val lastUpdate = metadata?.lastUpdate
-        if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true)
+        if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true) {
+            Log.d("READ_DATA", "reading from cache")
             source = Source.CACHE
+        }
+        else
+            Log.d("READ_DATA", "reading from server")
         return try {
             val collection = collectionReference.get(source).await()
             FirestorePreferences.setLastRead(metadataId, currentDate(), context)
@@ -196,8 +197,12 @@ class FirestoreDatabase(override var context: Context? = null) :
         var source = Source.DEFAULT
         val lastRead = FirestorePreferences.getLastRead(metadataId, context)
         val lastUpdate = metadata?.lastUpdate
-        if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true)
+        if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true) {
+            Log.d("READ_DATA", "reading from cache")
             source = Source.CACHE
+        }
+        else
+            Log.d("READ_DATA", "reading from server")
         return try {
             val collection = query.get(source).await()
             FirestorePreferences.setLastRead(metadataId, currentDate(), context)
