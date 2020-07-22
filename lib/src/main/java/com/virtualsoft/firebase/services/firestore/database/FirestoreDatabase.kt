@@ -1,6 +1,7 @@
 package com.virtualsoft.firebase.services.firestore.database
 
 import android.content.Context
+import android.util.Log
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.firestore.ktx.toObjects
@@ -136,8 +137,15 @@ class FirestoreDatabase(override var context: Context? = null) :
         var source = Source.DEFAULT
         val lastRead = FirestorePreferences.getLastRead(metadataId, context)
         val lastUpdate = metadata?.lastUpdate
-        if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true)
+        Log.d("READ_OPERATION", "lastRead: $lastRead")
+        Log.d("READ_OPERATION", "lastUpdate: $lastUpdate")
+        if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true) {
+            Log.d("READ_OPERATION", "reading from cache")
             source = Source.CACHE
+        }
+        else {
+            Log.d("READ_OPERATION", "reading from server")
+        }
         return try {
             val document = documentReference.get(source).await()
             FirestorePreferences.setLastRead(metadataId, currentDate(), context)
