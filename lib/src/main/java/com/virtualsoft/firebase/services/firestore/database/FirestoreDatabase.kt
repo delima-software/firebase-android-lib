@@ -52,7 +52,7 @@ class FirestoreDatabase(override var context: Context? = null) :
                 firebaseFirestoreException != null -> {
                     LogUtils.logError("READ_METADATA", "cannot read metadata from firestore: $metadataId", firebaseFirestoreException)
                 }
-                documentSnapshot?.exists() == false -> {
+                documentSnapshot?.exists() == true -> {
                     metadataSnapshotMap[metadataId] = documentSnapshot
                     LogUtils.logSuccess("READ_METADATA", "read metadata from firestore success")
                 }
