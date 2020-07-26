@@ -245,10 +245,11 @@ class FirestoreDatabase(override var context: Context? = null) :
     override suspend fun updateDocument(documentReference: DocumentReference, field: String, value: Any): Boolean {
         return try {
             documentReference.update(field, value).await()
+            documentReference.update(IDocument::lastUpdate.name, currentDate()).await()
             val documentMetadataId = documentReference.path.replace("/", "")
             val collectionMetadataId = documentReference.parent.path.replace("/", "")
-            writeMetadata(documentMetadataId)
-            writeMetadata(collectionMetadataId)
+            updateMetadata(documentMetadataId, IMetadata::lastUpdate.name, currentDate())
+            updateMetadata(collectionMetadataId, IMetadata::lastUpdate.name, currentDate())
             true
         }
         catch (e: Exception) {
@@ -267,7 +268,7 @@ class FirestoreDatabase(override var context: Context? = null) :
             val documentMetadataId = documentReference.path.replace("/", "")
             val collectionMetadataId = documentReference.parent.path.replace("/", "")
             deleteMetadata(documentMetadataId)
-            writeMetadata(collectionMetadataId)
+            updateMetadata(collectionMetadataId, IMetadata::lastUpdate.name, currentDate())
             true
         }
         catch (e: Exception) {
