@@ -92,11 +92,8 @@ class FirestoreDatabase(override var context: Context? = null) :
         }
     }
 
-    private suspend fun writeMetadata(metadataId: String): Boolean {
+    private suspend fun writeMetadata(metadataId: String, metadata: IMetadata): Boolean {
         return try {
-            var metadata = readMetadata(metadataId)
-            if (metadata == null)
-                metadata = Metadata.buildMetadata(metadataId, context)
             firestore.collection(COLLECTIONS.metadata.name).document(metadataId).set(metadata).await()
             LogUtils.logSuccess("WRITE_METADATA", "write metadata to firestore success")
             true
@@ -225,11 +222,19 @@ class FirestoreDatabase(override var context: Context? = null) :
 
     override suspend fun writeDocument(documentReference: DocumentReference, data: IDocument): Boolean {
         return try {
+            val currentDate = currentDate()
+            data.lastUpdate = currentDate
             documentReference.set(data).await()
             val documentMetadataId = documentReference.path.replace("/", "")
             val collectionMetadataId = documentReference.parent.path.replace("/", "")
-            writeMetadata(documentMetadataId)
-            writeMetadata(collectionMetadataId)
+            val documentMetadata = Metadata.buildMetadata(documentMetadataId, context).apply {
+                lastUpdate = currentDate
+            }
+            val collectionMetadata = Metadata.buildMetadata(collectionMetadataId, context).apply {
+                lastUpdate = currentDate
+            }
+            writeMetadata(documentMetadataId, documentMetadata)
+            writeMetadata(collectionMetadataId, collectionMetadata)
             true
         }
         catch (e: Exception) {
@@ -244,12 +249,14 @@ class FirestoreDatabase(override var context: Context? = null) :
 
     override suspend fun updateDocument(documentReference: DocumentReference, field: String, value: Any): Boolean {
         return try {
+            val currentDate = currentDate()
             documentReference.update(field, value).await()
-            documentReference.update(IDocument::lastUpdate.name, currentDate()).await()
+            if (field != IDocument::lastUpdate.name)
+                documentReference.update(IDocument::lastUpdate.name, currentDate).await()
             val documentMetadataId = documentReference.path.replace("/", "")
             val collectionMetadataId = documentReference.parent.path.replace("/", "")
-            updateMetadata(documentMetadataId, IMetadata::lastUpdate.name, currentDate())
-            updateMetadata(collectionMetadataId, IMetadata::lastUpdate.name, currentDate())
+            updateMetadata(documentMetadataId, IMetadata::lastUpdate.name, currentDate)
+            updateMetadata(collectionMetadataId, IMetadata::lastUpdate.name, currentDate)
             true
         }
         catch (e: Exception) {
