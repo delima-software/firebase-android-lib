@@ -13,6 +13,7 @@ import com.virtualsoft.firebase.services.firestore.database.FirestoreDatabase
 import com.virtualsoft.firebase.services.firestore.database.FirestoreDatabaseFactory
 import com.virtualsoft.firebase.services.firestore.treedatabase.FirestoreTreeDatabase
 import com.virtualsoft.firebase.services.firestore.treedatabase.FirestoreTreeDatabaseFactory
+import com.virtualsoft.firebase.services.storage.StorageFactory
 
 class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
 
@@ -38,6 +39,7 @@ class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
             )
             building.factories.add(AuthenticationFactory(context))
             building.factories.add(AnalyticsFactory(context))
+            building.factories.add(StorageFactory(context))
         }
 
         fun setAuthenticationProperties(authenticationProperties: Authentication.Properties?): Builder {
