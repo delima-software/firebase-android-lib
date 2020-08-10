@@ -5,6 +5,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.storage.FileDownloadTask
 import com.google.firebase.storage.StorageMetadata
 import com.google.firebase.storage.UploadTask
+import com.virtualsoft.core.designpatterns.builder.IBuild
 import com.virtualsoft.firebase.IFirebase
 import java.io.File
 import java.io.InputStream
@@ -20,7 +21,7 @@ interface IStorage : IFirebase {
         var successListener: (() -> Unit)? = null,
         var canceledListener: (() -> Unit)? = null,
         var failureListener: (() -> Unit)? = null
-    )
+    ) : IBuild
 
     data class DownloadProperties(
         var maxBytes: Long? = null,
@@ -32,7 +33,7 @@ interface IStorage : IFirebase {
         var successListener: (() -> Unit)? = null,
         var canceledListener: (() -> Unit)? = null,
         var failureListener: (() -> Unit)? = null
-    )
+    ) : IBuild
 
     fun upload(bytes: ByteArray, path: String, properties: UploadProperties? = null): UploadTask
 
