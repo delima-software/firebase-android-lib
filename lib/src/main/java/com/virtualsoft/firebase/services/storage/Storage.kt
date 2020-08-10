@@ -39,8 +39,9 @@ class Storage : IStorage {
                 properties.completedListener?.invoke()
             }
             .addOnSuccessListener { taskSnapshot ->
-                val downloadUrl = taskSnapshot.storage.downloadUrl
-                properties.downloadUrlListener?.invoke(downloadUrl.result)
+                taskSnapshot.storage.downloadUrl.addOnSuccessListener { downloadUrl ->
+                    properties.downloadUrlListener?.invoke(downloadUrl)
+                }
                 properties.successListener?.invoke()
             }
             .addOnCanceledListener {
