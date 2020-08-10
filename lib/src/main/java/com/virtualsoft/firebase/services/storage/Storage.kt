@@ -4,38 +4,16 @@ import android.net.Uri
 import com.google.android.gms.tasks.Task
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FileDownloadTask
-import com.google.firebase.storage.StorageMetadata
 import com.google.firebase.storage.UploadTask
 import com.google.firebase.storage.ktx.storage
 import com.virtualsoft.core.designpatterns.builder.IBuilder
 import com.virtualsoft.firebase.utils.LogUtils
+import com.virtualsoft.firebase.services.storage.IStorage.DownloadProperties
+import com.virtualsoft.firebase.services.storage.IStorage.UploadProperties
 import java.io.File
 import java.io.InputStream
 
 class Storage : IStorage {
-
-    data class UploadProperties(
-        var metadata: StorageMetadata? = null,
-        var progressListener: ((Double) -> Unit)? = null,
-        var pausedListener: (() -> Unit)? = null,
-        var completedListener: (() -> Unit)? = null,
-        var downloadUrlListener: ((Uri?) -> Unit)? = null,
-        var successListener: (() -> Unit)? = null,
-        var canceledListener: (() -> Unit)? = null,
-        var failureListener: (() -> Unit)? = null
-    )
-
-    data class DownloadProperties(
-        var maxBytes: Long? = null,
-        var progressListener: ((Double) -> Unit)? = null,
-        var pausedListener: (() -> Unit)? = null,
-        var completedListener: (() -> Unit)? = null,
-        var downloadUrlListener: ((Uri?) -> Unit)? = null,
-        var byteArrayListener: ((ByteArray) -> Unit)? = null,
-        var successListener: (() -> Unit)? = null,
-        var canceledListener: (() -> Unit)? = null,
-        var failureListener: (() -> Unit)? = null
-    )
 
     override val id = Storage::class.java.name
 
@@ -127,7 +105,7 @@ class Storage : IStorage {
             }
     }
 
-    fun upload(bytes: ByteArray, path: String, properties: UploadProperties? = null): UploadTask {
+    override fun upload(bytes: ByteArray, path: String, properties: UploadProperties?): UploadTask {
         val reference = storage.reference.child(path)
         val task = if (properties?.metadata != null )
             reference.putBytes(bytes, properties.metadata!!)
@@ -139,7 +117,7 @@ class Storage : IStorage {
         return task
     }
 
-    fun upload(stream: InputStream, path: String, properties: UploadProperties? = null): UploadTask {
+    override fun upload(stream: InputStream, path: String, properties: UploadProperties?): UploadTask {
         val reference = storage.reference.child(path)
         val task = if (properties?.metadata != null )
             reference.putStream(stream, properties.metadata!!)
@@ -151,7 +129,7 @@ class Storage : IStorage {
         return task
     }
 
-    fun upload(fileUri: Uri, path: String, properties: UploadProperties? = null): UploadTask {
+    override fun upload(fileUri: Uri, path: String, properties: UploadProperties?): UploadTask {
         val reference = storage.reference.child(path)
         val task = if (properties?.metadata != null )
             reference.putFile(fileUri, properties.metadata!!)
@@ -163,7 +141,7 @@ class Storage : IStorage {
         return task
     }
 
-    fun download(path: String, properties: DownloadProperties): Task<ByteArray>? {
+    override fun download(path: String, properties: DownloadProperties): Task<ByteArray>? {
         properties.maxBytes?.let { maxBytes ->
             val reference = storage.reference.child(path)
             val task = reference.getBytes(maxBytes)
@@ -173,7 +151,7 @@ class Storage : IStorage {
         return null
     }
 
-    fun download(file: File, path: String, properties: DownloadProperties): FileDownloadTask {
+    override fun download(file: File, path: String, properties: DownloadProperties): FileDownloadTask {
         val reference = storage.reference.child(path)
         val task = reference.getFile(file)
         addFileDownloadProperties(task, properties)
