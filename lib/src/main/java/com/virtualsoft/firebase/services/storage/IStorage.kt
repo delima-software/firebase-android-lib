@@ -37,7 +37,7 @@ interface IStorage : IFirebase {
 
     data class DeleteProperties(
         var successListener: (() -> Unit)? = null,
-        var failureListener: (() -> Unit)?
+        var failureListener: (() -> Unit)? = null
     ) : IBuild
 
     fun upload(bytes: ByteArray, path: String, properties: UploadProperties? = null): UploadTask
