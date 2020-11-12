@@ -35,6 +35,11 @@ interface IStorage : IFirebase {
         var failureListener: (() -> Unit)? = null
     ) : IBuild
 
+    data class DeleteProperties(
+        var successListener: (() -> Unit)? = null,
+        var failureListener: (() -> Unit)?
+    ) : IBuild
+
     fun upload(bytes: ByteArray, path: String, properties: UploadProperties? = null): UploadTask
 
     fun upload(stream: InputStream, path: String, properties: UploadProperties? = null): UploadTask
@@ -44,4 +49,6 @@ interface IStorage : IFirebase {
     fun download(path: String, properties: DownloadProperties): Task<ByteArray>?
 
     fun download(file: File, path: String, properties: DownloadProperties): FileDownloadTask
+
+    fun delete(path: String, properties: DeleteProperties? = null): Task<Void>
 }

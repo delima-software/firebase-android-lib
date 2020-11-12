@@ -10,6 +10,7 @@ import com.virtualsoft.core.designpatterns.builder.IBuilder
 import com.virtualsoft.firebase.utils.LogUtils
 import com.virtualsoft.firebase.services.storage.IStorage.DownloadProperties
 import com.virtualsoft.firebase.services.storage.IStorage.UploadProperties
+import com.virtualsoft.firebase.services.storage.IStorage.DeleteProperties
 import java.io.File
 import java.io.InputStream
 
@@ -106,6 +107,16 @@ class Storage : IStorage {
             }
     }
 
+    private fun addDeleteProperties(deleteTask: Task<Void>, properties: DeleteProperties) {
+        deleteTask
+            .addOnSuccessListener {
+                properties.successListener?.invoke()
+            }
+            .addOnFailureListener {
+                properties.failureListener?.invoke()
+            }
+    }
+
     override fun upload(bytes: ByteArray, path: String, properties: UploadProperties?): UploadTask {
         val reference = storage.reference.child(path)
         val task = if (properties?.metadata != null )
@@ -156,6 +167,15 @@ class Storage : IStorage {
         val reference = storage.reference.child(path)
         val task = reference.getFile(file)
         addFileDownloadProperties(task, properties)
+        return task
+    }
+
+    override fun delete(path: String, properties: DeleteProperties?): Task<Void> {
+        val reference = storage.reference.child(path)
+        val task = reference.delete()
+        properties?.let {
+            addDeleteProperties(task, properties)
+        }
         return task
     }
 }
