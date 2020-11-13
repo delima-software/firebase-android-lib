@@ -55,6 +55,7 @@ class FirestoreDatabase(override var context: Context? = null) :
                 }
                 documentSnapshot?.exists() == true -> {
                     metadataSnapshotMap[metadataId] = documentSnapshot
+                    FirestorePreferences.resetLastRead(metadataId, context)
                     LogUtils.logSuccess("READ_METADATA", "snapshot hit - read metadata from firestore success")
                 }
                 else -> {

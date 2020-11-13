@@ -28,4 +28,11 @@ internal object FirestorePreferences {
             preferences.edit().putLong(path, timeInMillis).apply()
         }
     }
+
+    fun resetLastRead(path: String, context: Context?) {
+        context?.let {
+            val preferences = it.getSharedPreferences(preferenceFileKey, Context.MODE_PRIVATE)
+            preferences.edit().putLong(path, Long.MIN_VALUE).apply()
+        }
+    }
 }
