@@ -13,13 +13,16 @@ import com.virtualsoft.firebase.services.firestore.database.FirestoreDatabase
 import com.virtualsoft.firebase.services.firestore.database.FirestoreDatabaseFactory
 import com.virtualsoft.firebase.services.firestore.treedatabase.FirestoreTreeDatabase
 import com.virtualsoft.firebase.services.firestore.treedatabase.FirestoreTreeDatabaseFactory
+import com.virtualsoft.firebase.services.link.DynamicLink
+import com.virtualsoft.firebase.services.link.DynamicLinkFactory
 import com.virtualsoft.firebase.services.storage.StorageFactory
 
 class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
 
-    var authenticationProperties: Authentication.Properties? = null
     var firestoreDatabaseProperties: FirestoreDatabase.Properties? = null
     var firestoreTreeDatabaseProperties: FirestoreTreeDatabase.Properties? = null
+    var authenticationProperties: Authentication.Properties? = null
+    var dynamicLinkProperties: DynamicLink.Properties? = null
 
     class Builder(val context: Context? = null) : IServiceChainBuilder<IFirebase> {
 
@@ -38,6 +41,7 @@ class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
                 )
             )
             building.factories.add(AuthenticationFactory(context))
+            building.factories.add(DynamicLinkFactory(context))
             building.factories.add(AnalyticsFactory(context))
             building.factories.add(StorageFactory(context))
         }
@@ -57,6 +61,11 @@ class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
             return this
         }
 
+        fun setDynamicLinkProperties(dynamicLinkProperties: DynamicLink.Properties?): Builder {
+            building.dynamicLinkProperties = dynamicLinkProperties
+            return this
+        }
+
         override fun build(): FirebaseChain {
             val firestoreDatabaseFactory = building.factories[0] as? FirestoreDatabaseFactory
             firestoreDatabaseFactory?.firestoreDatabaseProperties = building.firestoreDatabaseProperties
@@ -66,6 +75,9 @@ class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
 
             val authenticationFactory = building.factories[2] as? AuthenticationFactory
             authenticationFactory?.authenticationProperties = building.authenticationProperties
+
+            val dynamicLinkFactory = building.factories[3] as? DynamicLinkFactory
+            dynamicLinkFactory?.dynamicLinkProperties = building.dynamicLinkProperties
             return building
         }
     }

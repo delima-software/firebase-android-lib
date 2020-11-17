@@ -36,6 +36,7 @@ dependencies {
     implementation "com.google.firebase:firebase-auth:$dependency.firebase_auth"
     implementation "com.google.firebase:firebase-firestore-ktx:$dependency.firebase_firestore"
     implementation "com.google.firebase:firebase-storage-ktx:$dependency.firebase_storage"
+    implementation "com.google.firebase:firebase-dynamic-links-ktx:$dependency.firebase_dynamic_links"
 
     //Androidx
     implementation "androidx.core:core-ktx:$dependency.androidx_core"
