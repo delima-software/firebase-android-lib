@@ -31,12 +31,22 @@ dependencies {
     implementation "com.google.android.gms:play-services-auth:$dependency.google_play_services_auth"
 
     //Firebase
-    implementation "com.google.firebase:firebase-common-ktx:$dependency.firebase_common"
-    implementation "com.google.firebase:firebase-analytics:$dependency.firebase_analytics"
-    implementation "com.google.firebase:firebase-auth:$dependency.firebase_auth"
-    implementation "com.google.firebase:firebase-firestore-ktx:$dependency.firebase_firestore"
-    implementation "com.google.firebase:firebase-storage-ktx:$dependency.firebase_storage"
-    implementation "com.google.firebase:firebase-dynamic-links-ktx:$dependency.firebase_dynamic_links"
+    implementation platform("com.google.firebase:firebase-bom:$dependency.firebase_bom")
+    //implementation "com.google.firebase:firebase-common-ktx:$dependency.firebase_common"
+    //implementation "com.google.firebase:firebase-analytics:$dependency.firebase_analytics"
+    //implementation "com.google.firebase:firebase-auth:$dependency.firebase_auth"
+    //implementation "com.google.firebase:firebase-firestore-ktx:$dependency.firebase_firestore"
+    //implementation "com.google.firebase:firebase-storage-ktx:$dependency.firebase_storage"
+    //implementation "com.google.firebase:firebase-dynamic-links-ktx:$dependency.firebase_dynamic_links"
+    //implementation "com.google.firebase:firebase-messaging-ktx"
+
+    implementation "com.google.firebase:firebase-common-ktx"
+    implementation "com.google.firebase:firebase-analytics"
+    implementation "com.google.firebase:firebase-auth"
+    implementation "com.google.firebase:firebase-firestore-ktx"
+    implementation "com.google.firebase:firebase-storage-ktx"
+    implementation "com.google.firebase:firebase-dynamic-links-ktx"
+    implementation "com.google.firebase:firebase-messaging-ktx"
 
     //Androidx
     implementation "androidx.core:core-ktx:$dependency.androidx_core"
