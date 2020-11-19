@@ -15,7 +15,6 @@ import com.virtualsoft.firebase.services.firestore.treedatabase.FirestoreTreeDat
 import com.virtualsoft.firebase.services.firestore.treedatabase.FirestoreTreeDatabaseFactory
 import com.virtualsoft.firebase.services.link.DynamicLink
 import com.virtualsoft.firebase.services.link.DynamicLinkFactory
-import com.virtualsoft.firebase.services.messaging.MessagingService
 import com.virtualsoft.firebase.services.storage.StorageFactory
 
 class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
@@ -24,7 +23,6 @@ class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
     var firestoreTreeDatabaseProperties: FirestoreTreeDatabase.Properties? = null
     var authenticationProperties: Authentication.Properties? = null
     var dynamicLinkProperties: DynamicLink.Properties? = null
-    var messagingServiceProperties: MessagingService.MessagingServiceProperties? = null
 
     class Builder(val context: Context? = null) : IServiceChainBuilder<IFirebase> {
 
@@ -68,11 +66,6 @@ class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
             return this
         }
 
-        fun setMessagingServiceProperties(messagingServiceProperties: MessagingService.MessagingServiceProperties?): Builder {
-            building.messagingServiceProperties = messagingServiceProperties
-            return this
-        }
-
         override fun build(): FirebaseChain {
             val firestoreDatabaseFactory = building.factories[0] as? FirestoreDatabaseFactory
             firestoreDatabaseFactory?.firestoreDatabaseProperties = building.firestoreDatabaseProperties
@@ -86,7 +79,6 @@ class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
             val dynamicLinkFactory = building.factories[3] as? DynamicLinkFactory
             dynamicLinkFactory?.dynamicLinkProperties = building.dynamicLinkProperties
 
-            MessagingService.messagingProperties = building.messagingServiceProperties
             return building
         }
     }
