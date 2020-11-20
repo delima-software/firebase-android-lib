@@ -15,6 +15,7 @@ import com.virtualsoft.firebase.services.firestore.treedatabase.FirestoreTreeDat
 import com.virtualsoft.firebase.services.firestore.treedatabase.FirestoreTreeDatabaseFactory
 import com.virtualsoft.firebase.services.link.DynamicLink
 import com.virtualsoft.firebase.services.link.DynamicLinkFactory
+import com.virtualsoft.firebase.services.messaging.MessagingFactory
 import com.virtualsoft.firebase.services.storage.StorageFactory
 
 class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
@@ -44,6 +45,7 @@ class FirebaseChain(context: Context? = null) : IServiceChain<IFirebase> {
             building.factories.add(DynamicLinkFactory(context))
             building.factories.add(AnalyticsFactory(context))
             building.factories.add(StorageFactory(context))
+            building.factories.add(MessagingFactory(context))
         }
 
         fun setAuthenticationProperties(authenticationProperties: Authentication.Properties?): Builder {
