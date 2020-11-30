@@ -1,6 +1,6 @@
 # Add library
 
-[![Alt](https://jitpack.io/v/org.bitbucket.virtualsoft-libs/firebase-android-lib.svg)](https://jitpack.io/#org.bitbucket.virtualsoft-libs/firebase-android-lib)
+[![Release](https://jitpack.io/v/VirtualsoftCorporation/firebase-android-lib.svg)](https://jitpack.io/#VirtualsoftCorporation/firebase-android-lib)
 
 ## Jitpack repository
 
