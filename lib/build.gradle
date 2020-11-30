@@ -32,13 +32,6 @@ dependencies {
 
     //Firebase
     implementation platform("com.google.firebase:firebase-bom:$dependency.firebase_bom")
-    //implementation "com.google.firebase:firebase-common-ktx:$dependency.firebase_common"
-    //implementation "com.google.firebase:firebase-analytics:$dependency.firebase_analytics"
-    //implementation "com.google.firebase:firebase-auth:$dependency.firebase_auth"
-    //implementation "com.google.firebase:firebase-firestore-ktx:$dependency.firebase_firestore"
-    //implementation "com.google.firebase:firebase-storage-ktx:$dependency.firebase_storage"
-    //implementation "com.google.firebase:firebase-dynamic-links-ktx:$dependency.firebase_dynamic_links"
-    //implementation "com.google.firebase:firebase-messaging-ktx"
 
     implementation "com.google.firebase:firebase-common-ktx"
     implementation "com.google.firebase:firebase-analytics"
@@ -57,7 +50,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$dependency.jetbrains_kotlin_coroutines_play_services"
 
     //Virtualsoft
-    implementation "org.bitbucket.virtualsoft-libs:core-android-lib:$dependency.virtualsoft_core"
+    implementation "com.github.VirtualsoftCorporation:core-android-lib:$dependency.virtualsoft_core"
 
     //Test
     testImplementation "junit:junit:$dependency.tests_junit"
