@@ -130,20 +130,20 @@ class FirestoreDatabase(override var context: Context? = null) :
     }
 
     override suspend fun readDocument(documentReference: DocumentReference): IDocument? {
-        val metadataId = documentReference.path.replace("/", "")
-        val metadata = readMetadata(metadataId)
+        //val metadataId = documentReference.path.replace("/", "")
+        //val metadata = readMetadata(metadataId)
         var source = Source.DEFAULT
-        val lastRead = FirestorePreferences.getLastRead(metadataId, context)
-        val lastUpdate = metadata?.lastUpdate
-        if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true) {
-            Log.d("READ_DATA", "reading from cache")
-            source = Source.CACHE
-        }
-        else
-            Log.d("READ_DATA", "reading from server")
+        //val lastRead = FirestorePreferences.getLastRead(metadataId, context)
+        //val lastUpdate = metadata?.lastUpdate
+        //if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true) {
+        //    Log.d("READ_DATA", "reading from cache")
+        //    source = Source.CACHE
+        //}
+        //else
+        //    Log.d("READ_DATA", "reading from server")
         return try {
             val document = documentReference.get(source).await()
-            FirestorePreferences.setLastRead(metadataId, currentDate(), context)
+            //FirestorePreferences.setLastRead(metadataId, currentDate(), context)
             val classType = firestoreDatabaseProperties?.dataTypeResolver?.invoke(document.get("type").toString())
             document.toObject(classType!!)
         }
@@ -158,20 +158,20 @@ class FirestoreDatabase(override var context: Context? = null) :
     }
 
     override suspend fun readCollection(collectionReference: CollectionReference): List<IDocument> {
-        val metadataId = collectionReference.path.replace("/", "")
-        val metadata = readMetadata(metadataId)
+        //val metadataId = collectionReference.path.replace("/", "")
+        //val metadata = readMetadata(metadataId)
         var source = Source.DEFAULT
-        val lastRead = FirestorePreferences.getLastRead(metadataId, context)
-        val lastUpdate = metadata?.lastUpdate
-        if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true) {
-            Log.d("READ_DATA", "reading from cache")
-            source = Source.CACHE
-        }
-        else
-            Log.d("READ_DATA", "reading from server")
+        //val lastRead = FirestorePreferences.getLastRead(metadataId, context)
+        //val lastUpdate = metadata?.lastUpdate
+        //if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true) {
+        //    Log.d("READ_DATA", "reading from cache")
+        //    source = Source.CACHE
+        //}
+        //else
+        //    Log.d("READ_DATA", "reading from server")
         return try {
             val collection = collectionReference.get(source).await()
-            FirestorePreferences.setLastRead(metadataId, currentDate(), context)
+            //FirestorePreferences.setLastRead(metadataId, currentDate(), context)
             val list = mutableListOf<IDocument>()
             for (document in collection) {
                 val classType = firestoreDatabaseProperties?.dataTypeResolver?.invoke(document.get("type").toString())
@@ -190,20 +190,20 @@ class FirestoreDatabase(override var context: Context? = null) :
     }
 
     override suspend fun readCollection(collectionReference: CollectionReference, query: Query): List<IDocument> {
-        val metadataId = collectionReference.path.replace("/", "")
-        val metadata = readMetadata(metadataId)
+        //val metadataId = collectionReference.path.replace("/", "")
+        //val metadata = readMetadata(metadataId)
         var source = Source.DEFAULT
-        val lastRead = FirestorePreferences.getLastRead(metadataId, context)
-        val lastUpdate = metadata?.lastUpdate
-        if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true) {
-            Log.d("READ_DATA", "reading from cache")
-            source = Source.CACHE
-        }
-        else
-            Log.d("READ_DATA", "reading from server")
+        //val lastRead = FirestorePreferences.getLastRead(metadataId, context)
+        //val lastUpdate = metadata?.lastUpdate
+        //if (lastRead != null && lastUpdate?.isBeforeDateTime(lastRead) == true) {
+        //    Log.d("READ_DATA", "reading from cache")
+        //    source = Source.CACHE
+        //}
+        //else
+        //    Log.d("READ_DATA", "reading from server")
         return try {
             val collection = query.get(source).await()
-            FirestorePreferences.setLastRead(metadataId, currentDate(), context)
+            //FirestorePreferences.setLastRead(metadataId, currentDate(), context)
             val list = mutableListOf<IDocument>()
             for (document in collection) {
                 val classType = firestoreDatabaseProperties?.dataTypeResolver?.invoke(document.get("type").toString())
@@ -226,16 +226,16 @@ class FirestoreDatabase(override var context: Context? = null) :
             val currentDate = currentDate()
             data.lastUpdate = currentDate
             documentReference.set(data).await()
-            val documentMetadataId = documentReference.path.replace("/", "")
-            val collectionMetadataId = documentReference.parent.path.replace("/", "")
-            val documentMetadata = Metadata.buildMetadata(documentMetadataId, context).apply {
-                lastUpdate = currentDate
-            }
-            val collectionMetadata = Metadata.buildMetadata(collectionMetadataId, context).apply {
-                lastUpdate = currentDate
-            }
-            writeMetadata(documentMetadataId, documentMetadata)
-            writeMetadata(collectionMetadataId, collectionMetadata)
+            //val documentMetadataId = documentReference.path.replace("/", "")
+            //val collectionMetadataId = documentReference.parent.path.replace("/", "")
+            //val documentMetadata = Metadata.buildMetadata(documentMetadataId, context).apply {
+            //    lastUpdate = currentDate
+            //}
+            //val collectionMetadata = Metadata.buildMetadata(collectionMetadataId, context).apply {
+            //    lastUpdate = currentDate
+            //}
+            //writeMetadata(documentMetadataId, documentMetadata)
+            //writeMetadata(collectionMetadataId, collectionMetadata)
             true
         }
         catch (e: Exception) {
@@ -254,10 +254,10 @@ class FirestoreDatabase(override var context: Context? = null) :
             documentReference.update(field, value).await()
             if (field != IDocument::lastUpdate.name)
                 documentReference.update(IDocument::lastUpdate.name, currentDate).await()
-            val documentMetadataId = documentReference.path.replace("/", "")
-            val collectionMetadataId = documentReference.parent.path.replace("/", "")
-            updateMetadata(documentMetadataId, IMetadata::lastUpdate.name, currentDate)
-            updateMetadata(collectionMetadataId, IMetadata::lastUpdate.name, currentDate)
+            //val documentMetadataId = documentReference.path.replace("/", "")
+            //val collectionMetadataId = documentReference.parent.path.replace("/", "")
+            //updateMetadata(documentMetadataId, IMetadata::lastUpdate.name, currentDate)
+            //updateMetadata(collectionMetadataId, IMetadata::lastUpdate.name, currentDate)
             true
         }
         catch (e: Exception) {
@@ -273,10 +273,10 @@ class FirestoreDatabase(override var context: Context? = null) :
     override suspend fun deleteDocument(documentReference: DocumentReference): Boolean {
         return try {
             documentReference.delete().await()
-            val documentMetadataId = documentReference.path.replace("/", "")
-            val collectionMetadataId = documentReference.parent.path.replace("/", "")
-            deleteMetadata(documentMetadataId)
-            updateMetadata(collectionMetadataId, IMetadata::lastUpdate.name, currentDate())
+            //val documentMetadataId = documentReference.path.replace("/", "")
+            //val collectionMetadataId = documentReference.parent.path.replace("/", "")
+            //deleteMetadata(documentMetadataId)
+            //updateMetadata(collectionMetadataId, IMetadata::lastUpdate.name, currentDate())
             true
         }
         catch (e: Exception) {
