@@ -29,6 +29,12 @@ class Authentication(override var context: Context? = null) :
 
     companion object {
         const val GOOGLE_SIGN_IN = 1
+        const val EMAIL_SIGN_IN = 2
+        const val EMAIL_SIGN_IN_TYPE_KEY = "email_sign_in_type_key"
+        const val EMAIL_SIGN_IN_TYPE_CREATE = "create"
+        const val EMAIL_SIGN_IN_TYPE_LOGIN = "login"
+        const val EMAIL_KEY = "email"
+        const val PASSWORD_KEY = "password"
     }
 
     class Builder(context: Context?) : IBuilder<Authentication> {
@@ -63,13 +69,29 @@ class Authentication(override var context: Context? = null) :
     }
 
     override fun authenticate(requestCode: Int, intent: Intent, callback: (Boolean) -> Unit) {
-        if (requestCode == GOOGLE_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(intent)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                firebaseAuthWithGoogle(account!!, callback)
-            } catch (e: ApiException) {
-                callback(false)
+        when (requestCode) {
+            GOOGLE_SIGN_IN -> authenticateWithGoogle(intent, callback)
+            EMAIL_SIGN_IN -> authenticateWithEmail(intent, callback)
+        }
+    }
+
+    private fun authenticateWithGoogle(intent: Intent, callback: (Boolean) -> Unit) {
+        val task = GoogleSignIn.getSignedInAccountFromIntent(intent)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            firebaseAuthWithGoogle(account!!, callback)
+        } catch (e: ApiException) {
+            callback(false)
+        }
+    }
+
+    private fun authenticateWithEmail(intent: Intent, callback: (Boolean) -> Unit) {
+        val email = intent.getStringExtra(EMAIL_KEY)
+        val password = intent.getStringExtra(PASSWORD_KEY)
+        if (email != null && password != null) {
+            when (intent.getStringExtra(EMAIL_SIGN_IN_TYPE_KEY)) {
+                EMAIL_SIGN_IN_TYPE_CREATE -> firebaseCreateWithEmailAndPassword(email, password, callback)
+                EMAIL_SIGN_IN_TYPE_LOGIN -> firebaseLoginWithEmailAndPassword(email, password, callback)
             }
         }
     }
@@ -78,6 +100,34 @@ class Authentication(override var context: Context? = null) :
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
 
         firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    if (loggedUser() != null)
+                        callback(true)
+                    else
+                        callback(false)
+                }
+                else
+                    callback(false)
+            }
+    }
+
+    private fun firebaseCreateWithEmailAndPassword(email: String, password: String, callback: (Boolean) -> Unit) {
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    if (loggedUser() != null)
+                        callback(true)
+                    else
+                        callback(false)
+                }
+                else
+                    callback(false)
+            }
+    }
+
+    private fun firebaseLoginWithEmailAndPassword(email: String, password: String, callback: (Boolean) -> Unit) {
+        firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     if (loggedUser() != null)
