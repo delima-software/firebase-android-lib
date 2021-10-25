@@ -1,6 +1,9 @@
+plugins {
+    id 'maven-publish'
+}
+
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -9,8 +12,6 @@ android {
     defaultConfig {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode rootProject.ext.versionCode
-        versionName rootProject.ext.versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -21,6 +22,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    buildFeatures {
+        viewBinding true
     }
 }
 
@@ -56,5 +61,17 @@ dependencies {
     testImplementation "junit:junit:$dependency.tests_junit"
     androidTestImplementation "androidx.test.ext:junit:$dependency.tests_androidx_junit"
     androidTestImplementation "androidx.test.espresso:espresso-core:$dependency.tests_androidx_espresso"
+}
 
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.VirtualsoftCorporation'
+                artifactId = 'firebase-android-lib'
+                version = rootProject.ext.versionName
+            }
+        }
+    }
 }
