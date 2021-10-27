@@ -5,8 +5,8 @@ buildscript {
         targetSdkVersion = 29
         minSdkVersion = 21
 
-        versionCode = 26
-        versionName = '4.0.0'
+        versionCode = 27
+        versionName = '4.0.1'
 
         classpath = [
                 android_gradle : '7.0.3',
@@ -31,7 +31,7 @@ buildscript {
                 jetbrains_kotlin : '1.5.31',
                 jetbrains_kotlin_coroutines_play_services: '1.5.2-native-mt',
 
-                virtualsoft_core : '4.0.6',
+                virtualsoft_core : '5.0.0',
 
                 tests_junit : '4.13.2',
                 tests_androidx_junit : '1.1.3',
