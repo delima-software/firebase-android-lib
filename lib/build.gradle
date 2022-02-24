@@ -7,7 +7,6 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion "29.0.3"
 
     defaultConfig {
         minSdkVersion rootProject.ext.minSdkVersion
@@ -51,7 +50,6 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$dependency.androidx_appcompat"
 
     //Jetbrains
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$dependency.jetbrains_kotlin"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$dependency.jetbrains_kotlin_coroutines_play_services"
 
     //Virtualsoft

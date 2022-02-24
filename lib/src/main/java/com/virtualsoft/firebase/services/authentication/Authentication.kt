@@ -56,11 +56,14 @@ class Authentication(override var context: Context? = null) :
 
     private fun configureGoogleSignIn() {
         context?.let {
-            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(authenticationProperties?.googleWebClientId)
-                .requestEmail()
-                .build()
-            googleSignInClient = GoogleSignIn.getClient(it, gso)
+            val googleWebClientId = authenticationProperties?.googleWebClientId
+            if (googleWebClientId != null) {
+                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(googleWebClientId)
+                    .requestEmail()
+                    .build()
+                googleSignInClient = GoogleSignIn.getClient(it, gso)
+            }
         }
     }
 
