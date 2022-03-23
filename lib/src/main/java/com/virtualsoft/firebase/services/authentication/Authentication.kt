@@ -12,8 +12,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.virtualsoft.core.designpatterns.builder.IBuilder
 
-class Authentication(override var context: Context? = null) :
-    IAuthentication {
+class Authentication : IAuthentication {
 
     data class Properties(var googleWebClientId: String? = null)
 
@@ -37,12 +36,9 @@ class Authentication(override var context: Context? = null) :
         const val PASSWORD_KEY = "password"
     }
 
-    class Builder(context: Context?) : IBuilder<Authentication> {
+    class Builder : IBuilder<Authentication> {
 
-        override val building =
-            Authentication(
-                context
-            )
+        override val building = Authentication()
 
         fun setAuthenticationProperties(authenticationProperties: Properties?): Builder {
             building.authenticationProperties = authenticationProperties
@@ -50,20 +46,18 @@ class Authentication(override var context: Context? = null) :
         }
     }
 
-    override fun configureSignIn() {
-        configureGoogleSignIn()
+    override fun configureSignIn(context: Context) {
+        configureGoogleSignIn(context)
     }
 
-    private fun configureGoogleSignIn() {
-        context?.let {
-            val googleWebClientId = authenticationProperties?.googleWebClientId
-            if (googleWebClientId != null) {
-                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestIdToken(googleWebClientId)
-                    .requestEmail()
-                    .build()
-                googleSignInClient = GoogleSignIn.getClient(it, gso)
-            }
+    private fun configureGoogleSignIn(context: Context) {
+        val googleWebClientId = authenticationProperties?.googleWebClientId
+        if (googleWebClientId != null) {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(googleWebClientId)
+                .requestEmail()
+                .build()
+            googleSignInClient = GoogleSignIn.getClient(context, gso)
         }
     }
 

@@ -5,9 +5,9 @@ import com.virtualsoft.core.designpatterns.chain.IChainRequest
 import com.virtualsoft.core.service.IServiceFactory
 import com.virtualsoft.firebase.IFirebase
 
-class MessagingFactory(var context: Context? = null) : IServiceFactory<IFirebase> {
+class MessagingFactory : IServiceFactory<IFirebase> {
 
-    private var builder = Messaging.Builder(context)
+    private var builder = Messaging.Builder()
 
     override fun isProducer(request: IChainRequest): Boolean {
         return request.id == Messaging::class.java.name

@@ -6,7 +6,5 @@ import com.virtualsoft.firebase.IFirebase
 
 interface IAnalytics : IFirebase {
 
-    var context: Context?
-
-    fun logEvent(eventName: String, bundle: Bundle)
+    fun logEvent(context: Context, eventName: String, bundle: Bundle)
 }

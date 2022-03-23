@@ -7,10 +7,8 @@ import com.virtualsoft.firebase.IFirebase
 
 interface IAuthentication : IFirebase {
 
-    var context: Context?
-
     //Authentication
-    fun configureSignIn()
+    fun configureSignIn(context: Context)
 
     fun getGoogleSignInIntent(): Intent?
 
