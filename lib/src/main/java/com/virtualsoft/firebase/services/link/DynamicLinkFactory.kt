@@ -5,8 +5,7 @@ import com.virtualsoft.core.designpatterns.chain.IChainRequest
 import com.virtualsoft.core.service.IServiceFactory
 import com.virtualsoft.firebase.IFirebase
 
-class DynamicLinkFactory(var context: Context? = null,
-                         var dynamicLinkProperties: DynamicLink.Properties? = null) : IServiceFactory<IFirebase> {
+class DynamicLinkFactory(var dynamicLinkProperties: DynamicLink.Properties? = null) : IServiceFactory<IFirebase> {
 
     private var builder = DynamicLink.Builder()
 

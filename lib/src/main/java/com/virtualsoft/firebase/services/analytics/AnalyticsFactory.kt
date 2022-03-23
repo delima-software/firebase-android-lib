@@ -5,9 +5,9 @@ import com.virtualsoft.core.designpatterns.chain.IChainRequest
 import com.virtualsoft.core.service.IServiceFactory
 import com.virtualsoft.firebase.IFirebase
 
-class AnalyticsFactory(var context: Context? = null) : IServiceFactory<IFirebase> {
+class AnalyticsFactory : IServiceFactory<IFirebase> {
 
-    private var builder = Analytics.Builder(context)
+    private var builder = Analytics.Builder()
 
     override fun isProducer(request: IChainRequest): Boolean {
         return request.id == Analytics::class.java.name

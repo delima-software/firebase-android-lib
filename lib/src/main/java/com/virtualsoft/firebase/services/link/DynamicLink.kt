@@ -1,6 +1,5 @@
 package com.virtualsoft.firebase.services.link
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import com.google.firebase.dynamiclinks.ktx.dynamicLink
@@ -11,7 +10,7 @@ import com.virtualsoft.core.designpatterns.builder.IBuilder
 import com.virtualsoft.firebase.utils.LogUtils
 import kotlinx.coroutines.tasks.await
 
-class DynamicLink(val context: Context? = null) : IDynamicLink {
+class DynamicLink : IDynamicLink {
 
     data class Properties(var domainUriPrefix: String? = null)
 
@@ -19,9 +18,9 @@ class DynamicLink(val context: Context? = null) : IDynamicLink {
 
     private var dynamicLinkProperties: Properties? = null
 
-    class Builder(val context: Context? = null) : IBuilder<IDynamicLink> {
+    class Builder : IBuilder<IDynamicLink> {
 
-        override val building = DynamicLink(context)
+        override val building = DynamicLink()
 
         fun setDynamicLinkProperties(dynamicLinkProperties: Properties?): Builder {
             building.dynamicLinkProperties = dynamicLinkProperties

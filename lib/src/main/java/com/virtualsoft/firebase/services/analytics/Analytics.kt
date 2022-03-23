@@ -6,25 +6,21 @@ import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.virtualsoft.core.designpatterns.builder.IBuilder
 
-class Analytics(override var context: Context? = null) : IAnalytics {
+class Analytics : IAnalytics {
 
     private var firebaseAnalytics: FirebaseAnalytics? = null
-
-    init {
-        context?.let {
-            firebaseAnalytics = FirebaseAnalytics.getInstance(it)
-        }
-    }
 
     override val id: String
         get() = Analytics::class.java.name
 
-    class Builder(context: Context?) : IBuilder<Analytics> {
+    class Builder : IBuilder<Analytics> {
 
-        override val building = Analytics(context)
+        override val building = Analytics()
     }
 
-    override fun logEvent(eventName: String, bundle: Bundle) {
+    override fun logEvent(context: Context, eventName: String, bundle: Bundle) {
+        if (firebaseAnalytics == null)
+            firebaseAnalytics = FirebaseAnalytics.getInstance(context)
         firebaseAnalytics?.logEvent(eventName, bundle)
     }
 }
