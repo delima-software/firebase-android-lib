@@ -54,10 +54,10 @@ class FirebaseChain : IServiceChain<IFirebase> {
             val firestoreDatabaseFactory = building.factories[0] as? FirestoreDatabaseFactory
             firestoreDatabaseFactory?.firestoreDatabaseProperties = building.firestoreDatabaseProperties
 
-            val authenticationFactory = building.factories[2] as? AuthenticationFactory
+            val authenticationFactory = building.factories[1] as? AuthenticationFactory
             authenticationFactory?.authenticationProperties = building.authenticationProperties
 
-            val dynamicLinkFactory = building.factories[3] as? DynamicLinkFactory
+            val dynamicLinkFactory = building.factories[2] as? DynamicLinkFactory
             dynamicLinkFactory?.dynamicLinkProperties = building.dynamicLinkProperties
 
             return building
